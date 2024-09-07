@@ -1,0 +1,6 @@
+{{ if ne .chezmoi.os "windows" }}
+AppData/Local/nvim/*
+{{ end }}
+{{ if ne .chezmoi.os "linux" }}
+.config/nvim/*
+{{ end }}
