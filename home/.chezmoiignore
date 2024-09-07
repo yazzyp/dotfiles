@@ -1,11 +1,13 @@
 chezmoi.toml
 
+# Ignore Windows-specific paths unless on Windows
 {{ if ne .chezmoi.os "windows" }}
 AppData/Local/nvim/*
-  {{ if (.chezmoi.kernel.osrelease | lower | contains "microsoft") }}
-  AppData/Local/nvim/*
-  {{ end }}
 {{ end }}
+
+# Ignore Linux-specific paths unless on Linux or WSL
 {{ if ne .chezmoi.os "linux" }}
-.config/nvim/*
+  {{ if not (.chezmoi.kernel.osrelease | lower | contains "microsoft") }}
+    .config/nvim/*
+  {{ end }}
 {{ end }}
