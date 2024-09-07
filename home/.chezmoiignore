@@ -2,6 +2,9 @@ chezmoi.toml
 
 {{ if ne .chezmoi.os "windows" }}
 AppData/Local/nvim/*
+  {{ if (.chezmoi.kernel.osrelease | lower | contains "microsoft") }}
+  AppData/Local/nvim/*
+  {{ end }}
 {{ end }}
 {{ if ne .chezmoi.os "linux" }}
 .config/nvim/*
