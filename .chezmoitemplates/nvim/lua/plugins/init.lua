@@ -37,7 +37,7 @@ return {
   },
 
   {
-    "mufusseneger/nvim-lint",
+    "mfussenegger/nvim-lint",
     event = { "BufEnter", "BufWritePost", "InsertLeave", "TextChanged" },
     config = function()
       require "configs.lint"
