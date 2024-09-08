@@ -1,21 +1,12 @@
 [data]
-    os = "{{ .chezmoi.os }}"
+os = "{{ .chezmoi.os }}"
 
 [edit]
-    command = "nvim"
+command = "nvim"
 
 [merge]
-    command = "nvim"
+command = "nvim"
+args = "-d"
 
-# Paths for Neovim configuration
-{{ if eq .chezmoi.os "windows" }}
-  nvim_path = "AppData/Local/nvim"
-{{ else if eq .chezmoi.os "linux" }}
-  {{ if (.chezmoi.kernel.osrelease | lower | contains "microsoft") }}
-    nvim_path = ".config/nvim"
-  {{ else }}
-    nvim_path = ".config/nvim"
-  {{ end }}
-{{ else }}
-  nvim_path = ".config/nvim"
-{{ end }}
+[git]
+autoCommit = true

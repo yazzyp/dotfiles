@@ -1,11 +1,10 @@
-chezmoi.toml
-
-# Ignore Windows-specific paths unless on Windows
 {{ if ne .chezmoi.os "windows" }}
-AppData/Local/nvim/*
-{{ end }}
+AppData/
+Documents/
+*.ps1
 
-# Ignore Linux-specific paths unless on normal Linux
-{{ if or (ne .chezmoi.os "linux") (.chezmoi.kernel.osrelease | lower | contains "microsoft") }}
-.config/nvim/*
+{{ else }}
+dot_config/nvim/
+*.sh
+bin/
 {{ end }}
