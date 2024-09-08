@@ -5,6 +5,8 @@ Documents/
 
 {{ else }}
 dot_config/nvim/
+dot_config/
+.config/
 *.sh
 bin/
 {{ end }}
