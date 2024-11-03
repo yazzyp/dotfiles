@@ -1,17 +1,24 @@
 return {
+
   { "christoomey/vim-tmux-navigator", lazy = false },
   { "tpope/vim-surround", lazy = false },
+  { "Joakker/vim-antlr4", lazy = false },
+  { "github/copilot.vim", lazy = false },
+  { require "configs.copilot-chat" },
+  { require "configs.vim-slime" },
+  { require "configs.dap" },
 
   {
-    "jpalardy/vim-slime",
+    "rmagatti/auto-session",
     lazy = false,
-    init = function()
-      vim.g.slime_target = "neovim"
-      vim.g.slime_no_mappings = true
-    end,
-    config = function()
-      require "configs.vim-slime"
-    end,
+
+    ---enables autocomplete for opts
+    ---@module "auto-session"
+    ---@type AutoSession.Config
+    opts = {
+      suppressed_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
+      -- log_level = 'debug',
+    },
   },
 
   {
@@ -26,6 +33,14 @@ return {
     "stevearc/conform.nvim",
     -- event = 'BufWritePre', -- uncomment for format on save
     opts = require "configs.conform",
+  },
+
+  {
+    "xvzc/chezmoi.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      require("chezmoi").setup {}
+    end,
   },
 
   -- These are some examples, uncomment them if you want to see them work!
