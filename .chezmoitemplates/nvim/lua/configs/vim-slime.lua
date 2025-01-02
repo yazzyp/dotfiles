@@ -5,8 +5,10 @@ return {
     -- these two should be set before the plugin loads
     vim.g.slime_target = "neovim"
     vim.g.slime_no_mappings = true
+    -- vim.g.slime_python_ipython = 1
   end,
   config = function()
+    vim.g.slime_python_ipython = 1
     if vim.fn.confirm("Select target type", "&tmux\n&nvim", 2) == 1 then
       vim.g.slime_target = "tmux"
       vim.g.slime_default_config = {
@@ -27,4 +29,5 @@ return {
     { "gz", "<Plug>SlimeRegionSend", mode = { "x" }, { remap = true, silent = false } },
     { "gzc", "<Plug>SlimeConfig", mode = { "n" }, { remap = true, silent = false } },
   },
+  event = "TermOpen",
 }
