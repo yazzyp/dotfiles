@@ -30,8 +30,8 @@ return {
         { "gm", group = "+Copilot chat" },
         { "gmh", desc = "Show help" },
         { "gmd", desc = "Show diff" },
-        { "gmp", desc = "Show system prompt" },
-        { "gms", desc = "Show selection" },
+        { "gmi", desc = "Show info" },
+        { "gmc", desc = "Show context" },
         { "gmy", desc = "Yank diff" },
       },
     },
@@ -39,22 +39,21 @@ return {
   {
     -- dir = IS_DEV and "~/Projects/research/CopilotChat.nvim" or nil,
     "CopilotC-Nvim/CopilotChat.nvim",
-    branch = "canary", -- Use the canary branch if you want to test the latest features but it might be unstable
-    -- version = "v2.11.0",
-    -- Do not use branch and version together, either use branch or version
+    branch = "main",
+    -- version = "v3.3.0", -- use specific version to prevent breaking changes
     dependencies = {
       { "github/copilot.vim" },
       { "nvim-telescope/telescope.nvim" }, -- Use telescope for help actions
       { "nvim-lua/plenary.nvim" },
+      { 'MeanderingProgrammer/render-markdown.nvim' },
     },
-    -- build = "make tiktoken",
+    build = "make tiktoken",
     opts = {
       question_header = "## User ",
       answer_header = "## Copilot ",
       error_header = "## Error ",
       prompts = prompts,
       auto_follow_cursor = false, -- Don't follow the cursor after getting response
-      show_help = false, -- Show help in virtual text, set to true if that's 1st time using Copilot Chat
       history_path = vim.fn.stdpath "data" .. "/copilot-chat-history",
       mappings = {
         -- Use tab for completion
@@ -90,13 +89,13 @@ return {
         show_diff = {
           normal = "gmd",
         },
-        -- Show the prompt
-        show_system_prompt = {
-          normal = "gmp",
+        -- Show the info
+        show_info = {
+          normal = "gmi",
         },
         -- Show the user selection
-        show_user_selection = {
-          normal = "gms",
+        show_context = {
+          normal = "gmc",
         },
         -- Show help
         show_help = {
@@ -110,21 +109,17 @@ return {
       -- Use unnamed register for the selection
       opts.selection = select.unnamed
 
-      -- Override the git prompts message
-      opts.prompts.Commit = {
-        prompt = "Write commit message for the change with commitizen convention",
-        selection = select.gitdiff,
-      }
-      opts.prompts.CommitStaged = {
-        prompt = "Write commit message for the change with commitizen convention",
-        selection = function(source)
-          return select.gitdiff(source, true)
-        end,
-      }
+      local user = vim.env.USER or "User"
+      user = user:sub(1, 1):upper() .. user:sub(2)
+      opts.question_header = "  " .. user .. " "
+      opts.answer_header = "  Copilot "
+
+      -- Integration with markdown rendering
+      -- opts.highlight_headers = false
+      -- opts.separator = '---'
+      -- opts.error_header = '[!ERROR] Error'
 
       chat.setup(opts)
-      -- Setup the CMP integration
-      require("CopilotChat.integrations.cmp").setup()
 
       vim.api.nvim_create_user_command("CopilotChatVisual", function(args)
         chat.ask(args.args, { selection = select.visual })
@@ -166,15 +161,6 @@ return {
     end,
     event = "VeryLazy",
     keys = {
-      -- Show help actions with telescope
-      {
-        "<leader>ah",
-        function()
-          local actions = require "CopilotChat.actions"
-          require("CopilotChat.integrations.telescope").pick(actions.help_actions())
-        end,
-        desc = "CopilotChat - Help actions",
-      },
       -- Show prompts actions with telescope
       {
         "<leader>ap",
@@ -226,18 +212,14 @@ return {
         "<cmd>CopilotChatCommit<cr>",
         desc = "CopilotChat - Generate commit message for all changes",
       },
-      {
-        "<leader>aM",
-        "<cmd>CopilotChatCommitStaged<cr>",
-        desc = "CopilotChat - Generate commit message for staged changes",
-      },
       -- Quick chat with Copilot
       {
         "<leader>aq",
         function()
           local input = vim.fn.input "Quick Chat: "
           if input ~= "" then
-            vim.cmd("CopilotChatBuffer " .. input)
+            -- vim.cmd("CopilotChatBuffer " .. input)
+            require("CopilotChat").ask(input, { selection = require("CopilotChat.select").buffer })
           end
         end,
         desc = "CopilotChat - Quick chat",
