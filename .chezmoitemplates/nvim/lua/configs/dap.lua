@@ -7,6 +7,7 @@ return {
       "nvim-neotest/nvim-nio",
       "williamboman/mason.nvim",
       "Cliffback/netcoredbg-macOS-arm64.nvim",
+      "mfussenegger/nvim-dap-python",
     },
     event = "BufReadPost",
     config = function()
@@ -159,6 +160,8 @@ return {
       dap.listeners.before.event_exited.dapui_config = function()
         ui.close()
       end
+
+      require("dap-python").setup("python3")
     end,
   },
 }
