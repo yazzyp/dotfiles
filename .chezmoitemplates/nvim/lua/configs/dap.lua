@@ -119,6 +119,7 @@ return {
         { text = "", texthl = "DapStopped", linehl = "DapStoppedLine", numhl = "DapStopped" }
       )
       vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DapBreakpoint", linehl = "", numhl = ""})
+      vim.fn.sign_define("DapBreakpointCondition", { text = "●", texthl = "DapBreakpointCondition", linehl = "", numhl = ""})
       -- Define the highlight group for the line highlight
       vim.cmd [[
         highlight DapStoppedLine guibg=#555555
@@ -127,9 +128,16 @@ return {
       vim.cmd [[
         highlight DapBreakpoint guifg=#FF0000
       ]]
+      -- Define the highlight group for the conditional breakpoint sign
+      vim.cmd [[
+        highlight DapBreakpointCondition guifg=#CC5500
+      ]]
 
       vim.keymap.set("n", "<space>pp", dap.toggle_breakpoint, { desc = "Toggle breakpoint" })
       vim.keymap.set("n", "<space>pc", dap.run_to_cursor, { desc = "Run debugging to cursor" })
+      vim.keymap.set("n", "<space>po", function()
+        dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
+      end, { desc = "Set conditional breakpoint" })
 
       -- Eval var under cursor
       vim.keymap.set("n", "<space>?", function()
@@ -147,6 +155,7 @@ return {
       vim.keymap.set("n", "<F6>", function ()
         ui.open({reset = true})
       end, { desc = "Reset UI display" })
+      vim.keymap.set("n", "<F7>", dap.focus_frame, { desc = "Jump to current execution point" })
 
       dap.listeners.before.attach.dapui_config = function()
         ui.open()
@@ -154,14 +163,61 @@ return {
       dap.listeners.before.launch.dapui_config = function()
         ui.open()
       end
-      dap.listeners.before.event_terminated.dapui_config = function()
-        ui.close()
-      end
-      dap.listeners.before.event_exited.dapui_config = function()
-        ui.close()
+      -- dap.listeners.before.event_terminated.dapui_config = function()
+      --   ui.close()
+      -- end
+      -- dap.listeners.before.event_exited.dapui_config = function()
+      --   ui.close()
+      -- end
+
+
+      local dap_python = require("dap-python")
+      dap_python.setup("python3")
+
+      -- Function to find the project root directory
+      local function get_project_root()
+        local markers = {".git", "setup.py", "pyproject.toml", "requirements.txt"}
+        local cwd = vim.fn.getcwd()
+        for _, marker in ipairs(markers) do
+          local root = vim.fn.finddir(marker, cwd .. ";")
+          if root ~= "" then
+            return vim.fn.fnamemodify(root, ":h")
+          end
+        end
+        return cwd
       end
 
-      require("dap-python").setup("python3")
+      -- Force project root as cwd for all Python configurations
+      for _, config in pairs(dap.configurations.python or {}) do
+        config.cwd = get_project_root
+      end
+
+      table.insert(require('dap').configurations.python, {
+        type = "python",
+        request = "launch",
+        name = "src:module:args",
+        module = function()
+          local file = vim.fn.expand('%:p') -- Get the full path of the current file
+          local src_index = file:find("/src/")
+          if src_index then
+            local relative_path = file:sub(src_index + 5) -- Get the path after 'src/'
+            local module_path = relative_path:gsub("/", "."):gsub("%.py$", "") -- Replace '/' with '.' and remove '.lua' extension
+            return "src." .. module_path
+          else
+            return nil -- Handle the case where 'src' is not in the path
+          end
+        end,
+        cwd = get_project_root,
+        args = function()
+          local args_string = vim.fn.input('Arguments: ')
+          local utils = require("dap.utils")
+          if utils.splitstr and vim.fn.has("nvim-0.10") == 1 then
+            return utils.splitstr(args_string)
+          end
+          return vim.split(args_string, " +")
+        end;
+      })
+
     end,
   },
 }
