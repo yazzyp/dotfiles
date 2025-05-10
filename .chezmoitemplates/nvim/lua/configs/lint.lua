@@ -19,6 +19,7 @@ linters.flake8 = {
   args = {
     '--format=%(path)s:%(row)d:%(col)d:%(code)s:%(text)s',
     '--no-show-source',
+    '--docstring-convention=google',
     '--max-line-length=88', -- Set the character limit to 88
     '--stdin-display-name',
     function()
@@ -30,6 +31,7 @@ linters.flake8 = {
   parser = require('lint.parser').from_pattern(pattern, groups, nil, {
     ['source'] = 'flake8',
     ['severity'] = vim.diagnostic.severity.WARN,
+    ['diagnostic_format'] = '%m [%s]',
   }),
 }
 
