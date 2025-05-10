@@ -27,12 +27,13 @@ return {
     opts = {
       spec = {
         { "<leader>a", group = "ai" },
-        { "gm", group = "+Copilot chat" },
-        { "gmh", desc = "Show help" },
-        { "gmd", desc = "Show diff" },
-        { "gmi", desc = "Show info" },
-        { "gmc", desc = "Show context" },
-        { "gmy", desc = "Yank diff" },
+        { "<leader>gm", group = "Copilot Chat" },
+        -- { "gm", group = "+Copilot chat" },
+        -- { "gmh", desc = "Show help" },
+        -- { "gmd", desc = "Show diff" },
+        -- { "gmi", desc = "Show info" },
+        -- { "gmc", desc = "Show context" },
+        -- { "gmy", desc = "Yank diff" },
       },
     },
   },
@@ -53,6 +54,7 @@ return {
       answer_header = "## Copilot ",
       error_header = "## Error ",
       prompts = prompts,
+      model = "claude-3.7-sonnet",
       auto_follow_cursor = false, -- Don't follow the cursor after getting response
       history_path = vim.fn.stdpath "data" .. "/copilot-chat-history",
       mappings = {
@@ -81,38 +83,22 @@ return {
           normal = "<C-a>",
           insert = "<C-a>",
         },
-        -- Yank the diff in the response to register
-        yank_diff = {
-          normal = "gmy",
-        },
-        -- Show the diff
-        show_diff = {
-          normal = "gmd",
-        },
-        -- Show the info
-        show_info = {
-          normal = "gmi",
-        },
-        -- Show the user selection
-        show_context = {
-          normal = "gmc",
-        },
         -- Show help
         show_help = {
-          normal = "gmh",
+          normal = "g?",
         },
       },
     },
     config = function(_, opts)
-      local chat = require "CopilotChat"
-      local select = require "CopilotChat.select"
+      local chat = require("CopilotChat")
       -- Use unnamed register for the selection
-      opts.selection = select.unnamed
+      -- opts.selection = select.unnamed
 
       local user = vim.env.USER or "User"
       user = user:sub(1, 1):upper() .. user:sub(2)
       opts.question_header = "  " .. user .. " "
       opts.answer_header = "  Copilot "
+      -- vim.api.nvim_set_hl(0, 'CopilotChatHeader', { link = '@markup.heading.1.markdown', default = true })
 
       -- Integration with markdown rendering
       -- opts.highlight_headers = false
@@ -121,8 +107,11 @@ return {
 
       chat.setup(opts)
 
+      local select = require("CopilotChat.select")
+
       vim.api.nvim_create_user_command("CopilotChatVisual", function(args)
         chat.ask(args.args, { selection = select.visual })
+        chat.open()
       end, { nargs = "*", range = true })
 
       -- Inline chat with Copilot
@@ -137,6 +126,7 @@ return {
             row = 1,
           },
         })
+        chat.open()
       end, { nargs = "*", range = true })
 
       -- Restore CopilotChatBuffer
@@ -165,14 +155,19 @@ return {
       {
         "<leader>ap",
         function()
-          local actions = require "CopilotChat.actions"
-          require("CopilotChat.integrations.telescope").pick(actions.prompt_actions())
+          require("CopilotChat").select_prompt({
+            context = {
+              "buffers",
+            },
+          })
         end,
         desc = "CopilotChat - Prompt actions",
       },
       {
         "<leader>ap",
-        ":lua require('CopilotChat.integrations.telescope').pick(require('CopilotChat.actions').prompt_actions({selection = require('CopilotChat.select').visual}))<CR>",
+        function()
+          require("CopilotChat").select_prompt()
+        end,
         mode = "x",
         desc = "CopilotChat - Prompt actions",
       },
@@ -224,16 +219,16 @@ return {
         end,
         desc = "CopilotChat - Quick chat",
       },
-      -- Debug
-      { "<leader>ad", "<cmd>CopilotChatDebugInfo<cr>", desc = "CopilotChat - Debug Info" },
       -- Fix the issue with diagnostic
-      { "<leader>af", "<cmd>CopilotChatFixDiagnostic<cr>", desc = "CopilotChat - Fix Diagnostic" },
+      { "<leader>af", "<cmd>CopilotChatFixError<cr>", desc = "CopilotChat - Fix Diagnostic" },
       -- Clear buffer and chat history
       { "<leader>al", "<cmd>CopilotChatReset<cr>", desc = "CopilotChat - Clear buffer and chat history" },
       -- Toggle Copilot Chat Vsplit
       { "<leader>av", "<cmd>CopilotChatToggle<cr>", desc = "CopilotChat - Toggle" },
       -- Copilot Chat Models
       { "<leader>a?", "<cmd>CopilotChatModels<cr>", desc = "CopilotChat - Select Models" },
+      -- Copilot Chat Agents
+      { "<leader>aa", "<cmd>CopilotChatAgents<cr>", desc = "CopilotChat - Select Agents" },
     },
   },
 }
