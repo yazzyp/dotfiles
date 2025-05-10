@@ -2,11 +2,40 @@ return {
 
   { "christoomey/vim-tmux-navigator", lazy = false },
   { "tpope/vim-surround", lazy = false },
-  { "Joakker/vim-antlr4", lazy = false },
+  { "tpope/vim-repeat", lazy = false },
+  { "Joakker/vim-antlr4", event = "BufRead *.g4" },
   { "github/copilot.vim", lazy = false },
   { require "configs.copilot-chat" },
   { require "configs.vim-slime" },
   { require "configs.dap" },
+  { "kyoh86/vim-jsonl", event = "BufRead *.jsonl" },
+
+  {
+    "quarto-dev/quarto-nvim",
+    ft = { 'quarto' },
+    dev = false,
+    opts = {},
+    dependencies = {
+      "jmbuhr/otter.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+  },
+
+  {
+    "GCBallesteros/jupytext.nvim",
+    -- config = true,
+    lazy = false,
+    opts = {
+      custom_language_formatting = {
+        python = {
+          extension = 'qmd',
+          style = 'quarto',
+          force_ft = 'quarto',
+        },
+      },
+    },
+    config = true,
+  },
 
   {
     "rmagatti/auto-session",
@@ -23,16 +52,30 @@ return {
 
   {
     'MeanderingProgrammer/render-markdown.nvim',
-    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
-    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
     ---@module 'render-markdown'
     ---@type render.md.UserConfig
     opts = {},
+    -- opts = require "configs.markdown",
     config = function()
       require "configs.markdown"
     end,
     },
+
+  {
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {},
+  },
+
+  {
+    "folke/ts-comments.nvim",
+    opts = {},
+    event = "VeryLazy",
+    enabled = vim.fn.has("nvim-0.10.0") == 1,
+  },
 
   {
     "rhysd/conflict-marker.vim",
