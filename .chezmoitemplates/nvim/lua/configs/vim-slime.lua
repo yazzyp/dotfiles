@@ -5,7 +5,7 @@ return {
     -- these two should be set before the plugin loads
     vim.g.slime_target = "neovim"
     vim.g.slime_no_mappings = true
-    -- vim.g.slime_python_ipython = 1
+    vim.g.slime_python_ipython = 1
   end,
   config = function()
     vim.g.slime_python_ipython = 1
