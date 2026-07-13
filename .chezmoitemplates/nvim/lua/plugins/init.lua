@@ -1,7 +1,7 @@
 return {
 
   -- use blink
-  { import "nvchad.blink.lazyspec" },
+  { import = "nvchad.blink.lazyspec" },
 
   { "tpope/vim-surround", lazy = false },
   { "tpope/vim-repeat", lazy = false },
