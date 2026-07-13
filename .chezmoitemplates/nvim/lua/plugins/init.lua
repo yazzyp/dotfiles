@@ -1,18 +1,27 @@
 return {
 
-  { "christoomey/vim-tmux-navigator", lazy = false },
+  -- use blink
+  { import "nvchad.blink.lazyspec" },
+
   { "tpope/vim-surround", lazy = false },
   { "tpope/vim-repeat", lazy = false },
-  { "Joakker/vim-antlr4", event = "BufRead *.g4" },
   { "github/copilot.vim", lazy = false },
+  { "kyoh86/vim-jsonl", event = "BufRead *.jsonl" },
+  { "akinsho/git-conflict.nvim", lazy = false, version = "*", config = true },
+
   { require "configs.copilot-chat" },
   { require "configs.vim-slime" },
   { require "configs.dap" },
-  { "kyoh86/vim-jsonl", event = "BufRead *.jsonl" },
+  -- add snacks, molten and treesitter
+
+  {
+    "WhoIsSethDaniel/mason-tool-installer.nvim",
+    opts = require "configs.mason-tools",
+  },
 
   {
     "quarto-dev/quarto-nvim",
-    ft = { 'quarto' },
+    ft = { "quarto" },
     dev = false,
     opts = {},
     dependencies = {
@@ -28,9 +37,9 @@ return {
     opts = {
       custom_language_formatting = {
         python = {
-          extension = 'qmd',
-          style = 'quarto',
-          force_ft = 'quarto',
+          extension = "qmd",
+          style = "quarto",
+          force_ft = "quarto",
         },
       },
     },
@@ -51,10 +60,10 @@ return {
   },
 
   {
-    'MeanderingProgrammer/render-markdown.nvim',
+    "MeanderingProgrammer/render-markdown.nvim",
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
-    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" }, -- if you prefer nvim-web-devicons
     ---@module 'render-markdown'
     ---@type render.md.UserConfig
     opts = {},
@@ -62,7 +71,7 @@ return {
     config = function()
       require "configs.markdown"
     end,
-    },
+  },
 
   {
     "folke/todo-comments.nvim",
@@ -74,7 +83,7 @@ return {
     "folke/ts-comments.nvim",
     opts = {},
     event = "VeryLazy",
-    enabled = vim.fn.has("nvim-0.10.0") == 1,
+    enabled = vim.fn.has "nvim-0.10.0" == 1,
   },
 
   {

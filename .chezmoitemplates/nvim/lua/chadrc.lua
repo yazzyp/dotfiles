@@ -14,6 +14,9 @@ M = {
   -- 	Comment = { italic = true },
   -- 	["@comment"] = { italic = true },
   -- },
+  ui = {
+    telescope = { style = "bordered" },
+  },
 
   term = {
     winopts = { number = false },

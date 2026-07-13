@@ -1,0 +1,31 @@
+local options = {
+  ensure_installed = {
+    "basedpyright",
+    "bash-debug-adaptor",
+    "bash-language-server",
+    "css-lsp",
+    "debugpy",
+    "docker-language-server",
+    "dotenv-linter",
+    "html-lsp",
+    "jinja-lsp",
+    "json-lsp",
+    "jupytext",
+    "lua-language-server",
+    "marksman",
+    "mdformat",
+    "prettier",
+    "ruff",
+    "shellcheck",
+    "shfmt",
+    "sqlfluff",
+    "sqls",
+    "stylua",
+    "vale",
+    "yaml-language-server",
+    "yamlfmt",
+    "yamllint",
+  },
+}
+
+return options
