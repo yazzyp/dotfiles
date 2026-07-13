@@ -139,6 +139,7 @@ return {
 
   {
     "WhoIsSethDaniel/mason-tool-installer.nvim",
+    lazy = false,
     opts = require "configs.mason-tools",
   },
 
