@@ -8,19 +8,30 @@ return {
     vim.g.slime_python_ipython = 1
   end,
   config = function()
+    vim.g.slime_input_pid = false
+    vim.g.slime_suggest_default = true
+    vim.g.slime_menu_config = false
+    vim.g.slime_neovim_ignore_unlisted = false
     vim.g.slime_python_ipython = 1
-    if vim.fn.confirm("Select target type", "&tmux\n&nvim", 2) == 1 then
-      vim.g.slime_target = "tmux"
-      vim.g.slime_default_config = {
-        socket_name = vim.api.nvim_eval('get(split($TMUX, ","), 0)'),
-        target_pane = "{top-right}",
-      }
-    else
-      vim.g.slime_input_pid = false
-      vim.g.slime_suggest_default = true
-      vim.g.slime_menu_config = false
-      vim.g.slime_neovim_ignore_unlisted = false
-    end
+
+    vim.api.nvim_create_user_command("SlimeSwitchTarget", function()
+      local choice = vim.fn.confirm("Select slime target", "&neovim\n&tmux", 1)
+      if choice == 1 then
+        vim.g.slime_target = "neovim"
+        vim.g.slime_input_pid = false
+        vim.g.slime_suggest_default = true
+        vim.g.slime_menu_config = false
+        vim.g.slime_neovim_ignore_unlisted = false
+        vim.notify("vim-slime target set to neovim")
+      elseif choice == 2 then
+        vim.g.slime_target = "tmux"
+        vim.g.slime_default_config = {
+          socket_name = vim.api.nvim_eval 'get(split($TMUX, ","), 0)',
+          target_pane = "{top-right}",
+        }
+        vim.notify("vim-slime target set to tmux")
+      end
+    end, {})
   end,
   keys = {
     { "gz", "<Plug>SlimeMotionSend", mode = { "n" }, { remap = true, silent = false } },
@@ -28,6 +39,7 @@ return {
     { "gzg", "<Plug>SlimeParagraphSend", mode = { "n" }, { remap = true, silent = false } },
     { "gz", "<Plug>SlimeRegionSend", mode = { "x" }, { remap = true, silent = false } },
     { "gzc", "<Plug>SlimeConfig", mode = { "n" }, { remap = true, silent = false } },
+    { "<leader>st", ":SlimeSwitchTarget<CR>", mode = { "n" }, desc = "Switch vim-slime target" },
   },
   event = "TermOpen",
 }

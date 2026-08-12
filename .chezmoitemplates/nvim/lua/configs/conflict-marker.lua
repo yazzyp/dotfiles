@@ -1,4 +1,4 @@
--- change highlighing colours
+-- change highlighting colours
 vim.cmd [[
   highlight ConflictMarkerBegin guibg=#2f7366
   highlight ConflictMarkerOurs guibg=#2e5049

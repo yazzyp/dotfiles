@@ -19,6 +19,12 @@ local prompts = {
   Concise = "Please rewrite the following text to make it more concise.",
 }
 
+local function get_user_header()
+  local user = vim.env.USER or "User"
+  user = user:sub(1, 1):upper() .. user:sub(2)
+  return "  " .. user .. " "
+end
+
 return {
   -- { import = "plugins.extras.copilot-vim" }, -- Or use { import = "lazyvim.plugins.extras.coding.copilot" },
   {
@@ -28,12 +34,6 @@ return {
       spec = {
         { "<leader>a", group = "ai" },
         { "<leader>gm", group = "Copilot Chat" },
-        -- { "gm", group = "+Copilot chat" },
-        -- { "gmh", desc = "Show help" },
-        -- { "gmd", desc = "Show diff" },
-        -- { "gmi", desc = "Show info" },
-        -- { "gmc", desc = "Show context" },
-        -- { "gmy", desc = "Yank diff" },
       },
     },
   },
@@ -46,37 +46,31 @@ return {
       { "github/copilot.vim" },
       { "nvim-telescope/telescope.nvim" }, -- Use telescope for help actions
       { "nvim-lua/plenary.nvim" },
-      { 'MeanderingProgrammer/render-markdown.nvim' },
+      { "MeanderingProgrammer/render-markdown.nvim" },
     },
     build = "make tiktoken",
     opts = {
-      question_header = "## User ",
-      answer_header = "## Copilot ",
-      error_header = "## Error ",
-      prompts = prompts,
-      model = "claude-3.7-sonnet",
+      -- model = "claude-4-sonnet",
+      -- tools = 'copilot',
+      sticky = {"@copilot", "$claude-sonnet-4"},
+
       auto_follow_cursor = false, -- Don't follow the cursor after getting response
-      history_path = vim.fn.stdpath "data" .. "/copilot-chat-history",
+
+      -- selection = "visual",
+
+      headers = {
+        user = get_user_header(),
+        assistant = "  Copilot ",
+        tool = "  Tool "
+      },
+
+      -- prompts = prompts,
+
       mappings = {
         -- Use tab for completion
         complete = {
           detail = "Use @<C-b> or /<C-b> for options.",
           insert = "<C-b>",
-        },
-        -- Close the chat
-        close = {
-          normal = "q",
-          insert = "<C-c>",
-        },
-        -- Reset the chat buffer
-        reset = {
-          normal = "<C-x>",
-          insert = "<C-x>",
-        },
-        -- Submit the prompt to Copilot
-        submit_prompt = {
-          normal = "<CR>",
-          insert = "<C-CR>",
         },
         -- Accept the diff
         accept_diff = {
@@ -84,54 +78,53 @@ return {
           insert = "<C-a>",
         },
         -- Show help
-        show_help = {
-          normal = "g?",
+        show_diff = {
+          normal = "gi",
         },
       },
     },
     config = function(_, opts)
-      local chat = require("CopilotChat")
-      -- Use unnamed register for the selection
-      -- opts.selection = select.unnamed
-
-      local user = vim.env.USER or "User"
-      user = user:sub(1, 1):upper() .. user:sub(2)
-      opts.question_header = "  " .. user .. " "
-      opts.answer_header = "  Copilot "
-      -- vim.api.nvim_set_hl(0, 'CopilotChatHeader', { link = '@markup.heading.1.markdown', default = true })
-
-      -- Integration with markdown rendering
-      -- opts.highlight_headers = false
-      -- opts.separator = '---'
-      -- opts.error_header = '[!ERROR] Error'
-
+      local chat = require "CopilotChat"
       chat.setup(opts)
 
-      local select = require("CopilotChat.select")
+      vim.api.nvim_set_hl(0, "CopilotChatHeader", { link = "@markup.heading.1.markdown" })
+      -- vim.opt.completeopt:append({ "noinsert", "noselect", "popup" })
 
       vim.api.nvim_create_user_command("CopilotChatVisual", function(args)
-        chat.ask(args.args, { selection = select.visual })
+        chat.ask(args.args, { selection = "visual" })
         chat.open()
       end, { nargs = "*", range = true })
 
       -- Inline chat with Copilot
       vim.api.nvim_create_user_command("CopilotChatInline", function(args)
         chat.ask(args.args, {
-          selection = select.visual,
+          selection = "visual",
+        })
+        chat.open({
           window = {
             layout = "float",
             relative = "cursor",
-            width = 1,
+            width = 0.6,
             height = 0.4,
             row = 1,
+            blend = 30,
           },
         })
-        chat.open()
+      end, { nargs = "*", range = true })
+
+      vim.api.nvim_create_user_command("CopilotQuickChat", function()
+        vim.ui.input({ prompt = "Quick Chat: " }, function(input)
+          if input and input ~= "" then
+            chat.ask(input, { resources = "buffer" })
+            chat.open()
+          end
+        end)
       end, { nargs = "*", range = true })
 
       -- Restore CopilotChatBuffer
       vim.api.nvim_create_user_command("CopilotChatBuffer", function(args)
-        chat.ask(args.args, { selection = select.buffer })
+        chat.ask(args.args, { resources = "buffer" })
+        chat.open()
       end, { nargs = "*", range = true })
 
       -- Custom buffer for CopilotChat
@@ -155,11 +148,9 @@ return {
       {
         "<leader>ap",
         function()
-          require("CopilotChat").select_prompt({
-            context = {
-              "buffers",
-            },
-          })
+          require("CopilotChat").select_prompt {
+            resources = "buffers"
+          }
         end,
         desc = "CopilotChat - Prompt actions",
       },
@@ -191,16 +182,16 @@ return {
         desc = "CopilotChat - Inline chat",
       },
       -- Custom input for CopilotChat
-      {
-        "<leader>ai",
-        function()
-          local input = vim.fn.input "Ask Copilot: "
-          if input ~= "" then
-            vim.cmd("CopilotChat " .. input)
-          end
-        end,
-        desc = "CopilotChat - Ask input",
-      },
+      -- {
+      --   "<leader>ai",
+      --   function()
+      --     local input = vim.fn.input "Ask Copilot: "
+      --     if input ~= "" then
+      --       vim.cmd("CopilotChat " .. input)
+      --     end
+      --   end,
+      --   desc = "CopilotChat - Ask input",
+      -- },
       -- Generate commit message based on the git diff
       {
         "<leader>am",
@@ -210,13 +201,8 @@ return {
       -- Quick chat with Copilot
       {
         "<leader>aq",
-        function()
-          local input = vim.fn.input "Quick Chat: "
-          if input ~= "" then
-            -- vim.cmd("CopilotChatBuffer " .. input)
-            require("CopilotChat").ask(input, { selection = require("CopilotChat.select").buffer })
-          end
-        end,
+        "<cmd>CopilotQuickChat<cr>",
+        mode = "n",
         desc = "CopilotChat - Quick chat",
       },
       -- Fix the issue with diagnostic
